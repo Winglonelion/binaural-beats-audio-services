@@ -1,8 +1,10 @@
 package handlers
 
 import (
+	"encoding/json"
 	"io/fs"
 	"log"
+	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -15,10 +17,20 @@ type AudioFile struct {
 	Name         string    `json:"name"`          // Name of the file
 	Size         int64     `json:"size"`          // File size in bytes
 	LastModified time.Time `json:"last_modified"` // Last modification time of the file
+	Metadata     Metadata  `json:"metadata"`      // Additional metadata for the file
+}
+
+type Metadata struct {
+	ID       string `json:"id"`        // Unique ID of the file
+	Name     string `json:"name"`      // Display name of the file
+	Author   string `json:"author"`    // Author of the file
+	FFT      string `json:"fft"`       // FFT data (placeholder)
+	CoverImg string `json:"cover_img"` // Cover image URL or path
 }
 
 func ListFilesWithPagination(c *gin.Context) {
-	dirPath := "./audio_files" // Directory containing audio files
+	audioDir := "./audio_files"    // Directory containing audio files
+	metaDir := "./meta_data_files" // Directory containing metadata files
 
 	// Parse query parameters
 	cursorParam := c.DefaultQuery("cursor", "") // Optional cursor for pagination
@@ -41,7 +53,7 @@ func ListFilesWithPagination(c *gin.Context) {
 
 	// Read files from the directory
 	files := []AudioFile{}
-	err = filepath.Walk(dirPath, func(path string, info fs.FileInfo, err error) error {
+	err = filepath.Walk(audioDir, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -51,11 +63,25 @@ func ListFilesWithPagination(c *gin.Context) {
 			return nil
 		}
 
+		// Try to load metadata for this file
+		metadata := Metadata{}
+		metaFilePath := filepath.Join(metaDir, info.Name()+".json")
+		metaFile, err := os.ReadFile(metaFilePath)
+		if err == nil {
+			// Parse metadata JSON
+			if err := json.Unmarshal(metaFile, &metadata); err != nil {
+				log.Printf("Error parsing metadata for %s: %v", info.Name(), err)
+			}
+		} else {
+			log.Printf("Metadata file not found for %s", info.Name())
+		}
+
 		// Append file metadata to the list
 		files = append(files, AudioFile{
 			Name:         info.Name(),
 			Size:         info.Size(),
 			LastModified: info.ModTime(),
+			Metadata:     metadata,
 		})
 		return nil
 	})
@@ -72,7 +98,6 @@ func ListFilesWithPagination(c *gin.Context) {
 	// Filter files based on the cursor
 	filteredFiles := []AudioFile{}
 	for _, file := range files {
-		log.Printf("Checking file: %s, LastModified: %s, Cursor: %s", file.Name, file.LastModified, cursor)
 		if cursorParam == "" || file.LastModified.Before(cursor) {
 			filteredFiles = append(filteredFiles, file)
 		}
