@@ -21,11 +21,12 @@ type AudioFile struct {
 }
 
 type Metadata struct {
-	ID       string `json:"id"`        // Unique ID of the file
-	Name     string `json:"name"`      // Display name of the file
-	Author   string `json:"author"`    // Author of the file
-	FFT      string `json:"fft"`       // FFT data (placeholder)
-	CoverImg string `json:"cover_img"` // Cover image URL or path
+	ID        string `json:"id"`        // Unique ID of the file
+	Name      string `json:"name"`      // Display name of the file
+	Author    string `json:"author"`    // Author of the file
+	FFT       string `json:"fft"`       // FFT data (placeholder)
+	CoverImg  string `json:"cover_img"` // Cover image URL or path
+	Thumbhash string `json:"thumbhash"` // Thumbnail hash
 }
 
 func ListFilesWithPagination(c *gin.Context) {
