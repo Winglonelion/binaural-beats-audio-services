@@ -15,5 +15,8 @@ func main() {
 	// Endpoint to stream audio
 	router.GET("/api/audio/:id", handlers.StreamAudio)
 
+	// Endpoint to download audio
+	router.GET("/api/download/:filename", handlers.DownloadAudio)
+
 	router.Run(":8080") // Run server on port 8080
 }
