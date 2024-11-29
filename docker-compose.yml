@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  binaural_beats_audio_services:
+    image: golang:1.23.3 # Updated to match Go version requirement
+    container_name: binaural_beats_service
+    working_dir: /app
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - ./audio_files:/app/audio_files
+      - ./meta_data_files:/app/meta_data_files
+    command: sh -c "go mod tidy && go run main.go"
+    environment:
+      - GIN_MODE=release
+    restart: unless-stopped
