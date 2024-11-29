@@ -7,19 +7,18 @@ This is the backend service for the Binaural Beats Audio App. It provides API en
 
 ## Features
 
-- Serve audio files via API.
+- Streaming audio files via API.
+- Download audio files via API.
 - Provide audio metadata, including:
   - Name of the audio file.
   - Author of the audio file.
   - Precomputed FFT data (for visualizations).
 - Support error handling and logging.
 - Easy scalability for high traffic.
-- Extensible analytics integration.
 
 ## Requirements
 
 - **Go** (>=1.20)
-- **FFmpeg** (for processing audio, if needed)
 - Other dependencies managed via `go.mod`
 
 ## Installation
@@ -31,7 +30,12 @@ git clone https://github.com/Winglonelion/binaural-beats-audio-services.git
 cd binaural-beats-audio-services
 ```
 
-### 2. Install dependencies
+### 2. Quick start server with Docker
+  ```bash
+  docker-compose up -d
+  ```
+
+### 3. Install dependencies
 
 Dependencies are managed via `go.mod`. Run the following command to ensure all dependencies are installed:
 
@@ -54,6 +58,10 @@ The server will be available at `http://localhost:8080`.
 ### 1. `GET /api/audio`
 Retrieve a list of available audio files.
 
+- **Parameters**:
+  - `cursor` (string): Cursor to pagination data, in ios string time format.
+  - `limit` (number): Limit rows per page.
+
 **Response:**
 ```json
 {
@@ -61,34 +69,45 @@ Retrieve a list of available audio files.
     {
       "name": "audio_1.mp3",
       "size": 12345678,
-      "last_modified": "2024-11-25T03:47:54Z"
+      "last_modified": "2024-11-25T03:47:54Z",
+      metadata: {
+        id: "1",
+        name: "Audio 1",
+        author: "Nemo",
+        fft: [],
+        cover_image: "https://example.com/img1.png",
+        thumbhash: "RanDomHazh"
+      }
     },
     {
       "name": "audio_2.mp3",
       "size": 9876543,
-      "last_modified": "2024-11-27T10:55:18Z"
+      "last_modified": "2024-11-27T10:55:18Z",
+      metadata: {
+        id: "2",
+        name: "Audio 2",
+        author: "Fin",
+        fft: [],
+        cover_image: "https://example.com/img2.png",
+        thumbhash: "RanDomHazh"
+      }
     }
   ]
 }
 ```
 
-### 2. `GET /api/audio/metadata/:name`
-Retrieve metadata for a specific audio file.
 
-**Response:**
-```json
-{
-  "name": "audio_1.mp3",
-  "author": "Unknown Artist",
-  "fft": [0.1, 0.2, 0.3, ...]
-}
-```
-
-### 3. `GET /api/audio/:name`
+### 2. `GET /api/audio/:filename`
 Stream an audio file.
+- **Parameters**:
+  - `filename` (string): Name of the audio file.
+
+### 3. `GET /api/download/:filename`
+Download audio
+
 
 - **Parameters**:
-  - `name` (string): Name of the audio file.
+  - `fileName` (string): Name of the audio file.
 
 
 ## Development
